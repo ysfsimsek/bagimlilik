@@ -50,7 +50,11 @@ kotlin {
             implementation(libs.compose.material3)
             implementation(libs.compose.ui)
             implementation(libs.compose.components.resources)
-            implementation(libs.compose.uiToolingPreview)
+            
+            // Material Icons (iOS'ta Icons.Default hatalarını çözer)
+            implementation(compose.materialIconsExtended)
+            implementation(compose.material)
+
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
         }
