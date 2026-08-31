@@ -1,5 +1,6 @@
 package com.opendrip.bagimlilik.ui.screens
 
+import com.ysfyazilim.bagimlilik.ui.screens.auth.AuthScreen
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons

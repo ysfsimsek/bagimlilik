@@ -1,7 +1,6 @@
-package com.opendrip.bagimlilik.ui.screens.challenge
+package com.ysfyazilim.bagimlilik.ui.screens.challenge
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -10,28 +9,26 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Image
-import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import com.opendrip.bagimlilik.data.model.JournalEntry
-import com.opendrip.bagimlilik.data.repository.JournalRepository
-import java.text.SimpleDateFormat
-import java.util.*
+
+data class UIJournalEntry(
+    val id: String,
+    val content: String,
+    val mood: String,
+    val dateText: String
+)
 
 @Composable
 fun ChallengeScreen() {
-    val context = LocalContext.current
-    val repository = remember { JournalRepository(context) }
-    var journalEntries by remember { mutableStateOf(repository.getAllEntries()) }
+    var journalEntries by remember { mutableStateOf(listOf<UIJournalEntry>()) }
     var showAddDialog by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -50,13 +47,13 @@ fun ChallengeScreen() {
             AddEntryDialog(
                 onDismiss = { showAddDialog = false },
                 onSave = { content, mood ->
-                    val newEntry = JournalEntry(
-                        id = UUID.randomUUID().toString(),
+                    val newEntry = UIJournalEntry(
+                        id = "entry_${journalEntries.size + 1}",
                         content = content,
-                        mood = mood
+                        mood = mood,
+                        dateText = "Bugün"
                     )
-                    repository.saveEntry(newEntry)
-                    journalEntries = repository.getAllEntries()
+                    journalEntries = journalEntries + newEntry
                     showAddDialog = false
                 }
             )
@@ -187,10 +184,7 @@ fun WeeklyCalendarView() {
 }
 
 @Composable
-fun JournalEntryCard(entry: JournalEntry) {
-    val sdf = SimpleDateFormat("dd MMMM, HH:mm", Locale("tr", "TR"))
-    val dateString = sdf.format(Date(entry.date))
-
+fun JournalEntryCard(entry: UIJournalEntry) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -203,7 +197,7 @@ fun JournalEntryCard(entry: JournalEntry) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = dateString, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                Text(text = entry.dateText, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
                 Surface(
                     shape = RoundedCornerShape(8.dp),
                     color = when(entry.mood) {
