@@ -2,7 +2,7 @@ name: iOS Build
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "**" ]
   workflow_dispatch:
 
 jobs:
@@ -24,23 +24,20 @@ jobs:
       with:
         xcode-version: 'latest-stable'
 
-    - name: Calistirma İznini Ver
+    - name: Calistirma Iznini Ver
       run: chmod +x gradlew
 
-    - name: KMP iOS Framework Derle
-      run: ./gradlew :shared:embedAndSignAppleFrameworkForXcode
-
-    - name: Xcode ile Uygulamayi Derle
+    - name: Xcode Simulator Derlemesi Yap
       run: |
         xcodebuild -project iosApp/iosApp.xcodeproj \
                    -scheme iosApp \
-                   -sdk iphoneos \
-                   -configuration Release \
+                   -sdk iphonesimulator \
+                   -configuration Debug \
                    CODE_SIGNING_ALLOWED=NO \
                    BUILD_DIR=build
 
     - name: Ciktiyi Yukle
       uses: actions/upload-artifact@v4
       with:
-        name: ios-uygulama-çıktısı
-        path: iosApp/build/Release-iphoneos/
+        name: ios-simulasyon-çıktısı
+        path: iosApp/build/Debug-iphonesimulator/
