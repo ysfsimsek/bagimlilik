@@ -9,7 +9,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.opendrip.bagimlilik.data.repository.AuthRepository
@@ -32,7 +31,7 @@ sealed class BottomNavItem(val title: String, val icon: ImageVector, val route: 
 
 @Composable
 fun MainScreen() {
-    val context = LocalContext.current
+    val context: Any? = null
     val authRepository = remember { AuthRepository(context) }
     
     var showSplash by remember { mutableStateOf(true) }
