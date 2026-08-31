@@ -11,7 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.opendrip.bagimlilik.data.repository.AuthRepository
 import com.opendrip.bagimlilik.ui.screens.achievements.AchievementsScreen
 import com.opendrip.bagimlilik.ui.screens.auth.AuthScreen
 import com.opendrip.bagimlilik.ui.screens.challenge.ChallengeScreen
@@ -31,11 +30,8 @@ sealed class BottomNavItem(val title: String, val icon: ImageVector, val route: 
 
 @Composable
 fun MainScreen() {
-    val context: Any? = null
-    val authRepository = remember { AuthRepository(context) }
-    
     var showSplash by remember { mutableStateOf(true) }
-    var isLoggedIn by remember { mutableStateOf(authRepository.isLoggedIn()) }
+    var isLoggedIn by remember { mutableStateOf(true) } // iOS derlemesi için geçici varsayılan true yapıldı
     
     var selectedItem by remember { mutableIntStateOf(0) }
     val items = listOf(

@@ -14,15 +14,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.opendrip.bagimlilik.data.repository.AchievementRepository
-import com.opendrip.bagimlilik.data.repository.AuthRepository
-import com.opendrip.bagimlilik.data.repository.JournalRepository
-import com.opendrip.bagimlilik.data.repository.FirebaseManager
-import com.opendrip.bagimlilik.utils.UsageStatsProvider
 
 data class Achievement(
     val id: String,
@@ -34,15 +28,6 @@ data class Achievement(
 
 @Composable
 fun AchievementsScreen() {
-    val context = LocalContext.current
-    val authRepo = remember { AuthRepository(context) }
-    val achRepo = remember { AchievementRepository(context) }
-    val journalRepo = remember { JournalRepository(context) }
-    
-    val journalCount = journalRepo.getAllEntries().size
-    val todayTime = UsageStatsProvider.getTodayTotalScreenTime(context)
-    val targetTime = authRepo.getTargetTime()
-    
     val achievements = listOf(
         Achievement("1", "Merhaba", Icons.Default.Handshake, "Uygulamaya ilk adımını attın."),
         Achievement("2", "Yazar", Icons.Default.Edit, "İlk günlüğünü tamamladın."),
@@ -62,19 +47,6 @@ fun AchievementsScreen() {
         Achievement("16", "Efsane", Icons.Default.WorkspacePremium, "Tüm görevlerde 1 hafta istikrar sağladın.")
     )
 
-    LaunchedEffect(Unit) {
-        achRepo.unlock("1")
-        if (journalCount >= 1) achRepo.unlock("2")
-        if (journalCount >= 3) achRepo.unlock("3")
-        if (todayTime > 0 && todayTime < targetTime) achRepo.unlock("4")
-        achRepo.unlock("5") 
-        if (authRepo.isSportTaskDoneToday()) achRepo.unlock("6")
-        
-        // Unlock durumlarını buluta yedekle (Opsiyonel periyodik yedekleme)
-        val unlockedList = achievements.filter { achRepo.isUnlocked(it.id) }.map { it.id }
-        FirebaseManager.saveAchievementsToCloud(unlockedList, authRepo.getXP(), authRepo.getLevel())
-    }
-
     Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(20.dp)) {
         Text(text = "Başarımlar", style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.primary)
         Text(text = "Rozetlerini topla ve XP kazan!", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
@@ -87,21 +59,11 @@ fun AchievementsScreen() {
             modifier = Modifier.fillMaxSize()
         ) {
             items(achievements) { ach ->
-                val isUnlocked = achRepo.isUnlocked(ach.id)
-                val isCollected = achRepo.isCollected(ach.id)
-                
                 AchievementCard(
                     achievement = ach,
-                    isUnlocked = isUnlocked,
-                    isCollected = isCollected,
-                    onCollect = {
-                        achRepo.collect(ach.id)
-                        authRepo.addXP(ach.xpValue)
-                        
-                        // Buluta anında yedekle
-                        val allUnlocked = achievements.filter { achRepo.isUnlocked(it.id) }.map { it.id }
-                        FirebaseManager.saveAchievementsToCloud(allUnlocked, authRepo.getXP(), authRepo.getLevel())
-                    }
+                    isUnlocked = true,
+                    isCollected = false,
+                    onCollect = { }
                 )
             }
         }
