@@ -1,4 +1,4 @@
-package com.opendrip.bagimlilik.ui.screens.profile
+package com.ysfyazilim.bagimlilik.ui.screens.profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,35 +16,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.opendrip.bagimlilik.data.repository.AuthRepository
-import com.opendrip.bagimlilik.ui.theme.LocalThemeIsDark
-import android.app.Activity
-import android.content.Context
 import androidx.compose.ui.window.Dialog
 
 @Composable
 fun ProfileScreen() {
-    val context = LocalContext.current
-    val authRepository = remember { AuthRepository(context) }
     val scrollState = rememberScrollState()
-    val isDark = LocalThemeIsDark.current
     
     var showTargetDialog by remember { mutableStateOf(false) }
     var showApiDialog by remember { mutableStateOf(false) }
-    var currentTarget by remember { mutableLongStateOf(authRepository.getTargetTime()) }
+    var currentTarget by remember { mutableLongStateOf(4 * 60 * 60 * 1000L) }
     var showPrivacyDialog by remember { mutableStateOf(false) }
+    var isDarkTheme by remember { mutableStateOf(false) }
+    var apiKey by remember { mutableStateOf("") }
+    var userName by remember { mutableStateOf("Kullanıcı") }
 
     if (showTargetDialog) {
         TargetTimeDialog(
             currentHours = (currentTarget / (1000 * 60 * 60)).toInt(),
             onDismiss = { showTargetDialog = false },
             onSave = { newHours ->
-                val newMillis = newHours * 60 * 60 * 1000L
-                authRepository.setTargetTime(newMillis)
-                currentTarget = newMillis
+                currentTarget = newHours * 60 * 60 * 1000L
                 showTargetDialog = false
             }
         )
@@ -52,10 +45,10 @@ fun ProfileScreen() {
 
     if (showApiDialog) {
         ApiKeyDialog(
-            currentKey = authRepository.getApiKey(),
+            currentKey = apiKey,
             onDismiss = { showApiDialog = false },
             onSave = { newKey ->
-                authRepository.setApiKey(newKey)
+                apiKey = newKey
                 showApiDialog = false
             }
         )
@@ -93,7 +86,7 @@ fun ProfileScreen() {
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = authRepository.getUserName(),
+            text = userName,
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
@@ -108,11 +101,8 @@ fun ProfileScreen() {
         SettingSwitch(
             title = "Koyu Tema", 
             icon = Icons.Default.DarkMode, 
-            checked = isDark.value,
-            onCheckedChange = { 
-                isDark.value = it
-                context.getSharedPreferences("baksi_settings", Context.MODE_PRIVATE).edit().putBoolean("is_dark", it).apply()
-            }
+            checked = isDarkTheme,
+            onCheckedChange = { isDarkTheme = it }
         )
         
         SettingItem(
@@ -138,14 +128,13 @@ fun ProfileScreen() {
         
         Button(
             onClick = { 
-                authRepository.logout()
-                (context as? Activity)?.recreate() 
+                userName = "Kullanıcı"
             },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.1f)),
             shape = RoundedCornerShape(16.dp)
         ) {
-            Text(text = "Verileri Sıfırla ve İsim Değiştir", color = MaterialTheme.colorScheme.error)
+            Text(text = "Verileri Sıfırla", color = MaterialTheme.colorScheme.error)
         }
 
         Spacer(modifier = Modifier.height(100.dp))
@@ -211,13 +200,13 @@ fun PrivacyPolicyDialog(onDismiss: () -> Unit) {
                         text = """
                             Baksı Uygulaması Gizlilik Politikası
                             
-                            1. Veri Toplama: Baksı, sadece ekran süresi istatistiklerinizi ve uygulama içi günlüklerinizi yerel olarak telefonunuzda saklar.
+                            1. Veri Toplama: Baksı, sadece ekran süresi istatistiklerinizi yerel olarak saklar.
                             
-                            2. Kullanım Erişimi: Uygulama, ekran sürenizi hesaplamak için Android 'Kullanım Erişimi' iznine ihtiyaç duyar. Bu veriler hiçbir sunucuya gönderilmez.
+                            2. Kullanım Erişimi: Ekran sürenizi hesaplamak için gerekli izinlere başvurulur. Veriler sunucuya aktarılmaz.
                             
-                            3. Kişisel Bilgiler: İsim belirleme sırasında alınan bilgi sadece cihazda profilinizi kişiselleştirmek için kullanılır.
+                            3. Kişisel Bilgiler: Profil kişiselleştirmesi haricinde saklanmaz.
                             
-                            4. Veri Güvenliği: Tüm verileriniz cihazınızın güvenli alanında saklanmaktadır. "Çıkış Yap" seçeneği ile tüm verilerinizi cihazdan silebilirsiniz.
+                            4. Veri Güvenliği: Tüm verileriniz cihazınızın güvenli alanında tutulur.
                             
                             5. İletişim: Sorularınız için simsekay06@gmail.com üzerinden bize ulaşabilirsiniz.
                         """.trimIndent(),
