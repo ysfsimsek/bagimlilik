@@ -22,6 +22,9 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
       - name: Build iOS Framework (iosArm64)
         run: ./gradlew :shared:compileKotlinIosArm64
 
@@ -39,7 +42,9 @@ jobs:
       - name: Create Payload and Package IPA
         run: |
           mkdir -p Payload
-          cp -R build/Build/Products/Release-iphoneos/iosApp.app Payload/
+          APP_PATH=$(find build -name "*.app" -type d | head -n 1)
+          echo "Bulunan App Yolu: $APP_PATH"
+          cp -R "$APP_PATH" Payload/
           zip -r bagimlilik-gercek-cihaz.ipa Payload
 
       - name: Upload IPA Artifact
