@@ -1,13 +1,8 @@
-package com.opendrip.bagimlilik.ui.theme
+package com.ysfyazilim.bagimlilik.ui.theme
 
-import android.app.Activity
-import android.content.Context
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -15,9 +10,8 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
 
-// Tema yönetimi için Local provider
+// Tema yönetimi için KMP Uyumlu Local provider
 val LocalThemeIsDark = compositionLocalOf<MutableState<Boolean>> { error("No state found") }
 
 private val DarkColorScheme = darkColorScheme(
@@ -48,10 +42,8 @@ private val LightColorScheme = lightColorScheme(
 fun BagimlilikTheme(
     content: @Composable () -> Unit
 ) {
-    val context = LocalContext.current
     val systemDark = isSystemInDarkTheme()
-    val prefs = remember { context.getSharedPreferences("baksi_settings", Context.MODE_PRIVATE) }
-    val isDark = remember { mutableStateOf(prefs.getBoolean("is_dark", systemDark)) }
+    val isDark = remember { mutableStateOf(systemDark) }
 
     CompositionLocalProvider(LocalThemeIsDark provides isDark) {
         val colorScheme = if (isDark.value) DarkColorScheme else LightColorScheme

@@ -1,12 +1,12 @@
-package com.opendrip.bagimlilik.ui.theme
+package com.ysfyazilim.bagimlilik.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
 // Baksı Logo Renk Paleti
-val BaksiGreen = Color(0xFF2D6A4F)    // Logodaki koyu yeşil
-val BaksiLightGreen = Color(0xFF40916C) // Logodaki yaprak yeşili
-val BaksiTeal = Color(0xFF1B4332)      // Logodaki dijital teal tonu
-val BaksiCyan = Color(0xFF52B788)      // Logodaki açık parlak tonlar
+val BaksiGreen = Color(0xFF2D6A4F)
+val BaksiLightGreen = Color(0xFF40916C)
+val BaksiTeal = Color(0xFF1B4332)
+val BaksiCyan = Color(0xFF52B788)
 
 // Yardımcı Renkler
 val RoyalPurple = Color(0xFF7400B8)
