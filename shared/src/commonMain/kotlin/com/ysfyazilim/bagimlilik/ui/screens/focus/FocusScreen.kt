@@ -1,12 +1,9 @@
-package com.opendrip.bagimlilik.ui.screens.focus
+package com.ysfyazilim.bagimlilik.ui.screens.focus
 
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,19 +13,17 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
-import kotlin.time.Duration.Companion.seconds
 
 @Composable
-fun FocusScreen(onClose: () -> Unit) {
+fun FocusScreen() {
     var timeLeft by remember { mutableIntStateOf(25 * 60) } // 25 Dakika
     var isRunning by remember { mutableStateOf(false) }
     val totalTime = 25 * 60
 
     LaunchedEffect(isRunning) {
         while (isRunning && timeLeft > 0) {
-            delay(1.seconds)
+            delay(1000)
             timeLeft--
         }
         if (timeLeft == 0) isRunning = false
@@ -37,13 +32,12 @@ fun FocusScreen(onClose: () -> Unit) {
     val progress = timeLeft.toFloat() / totalTime
 
     Column(
-        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(24.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        IconButton(onClick = onClose, modifier = Modifier.align(Alignment.End)) {
-            Icon(Icons.Default.Close, contentDescription = "Kapat")
-        }
-
         Spacer(modifier = Modifier.height(40.dp))
 
         Text(
@@ -80,8 +74,11 @@ fun FocusScreen(onClose: () -> Unit) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 val minutes = timeLeft / 60
                 val seconds = timeLeft % 60
+                val minStr = if (minutes < 10) "0$minutes" else "$minutes"
+                val secStr = if (seconds < 10) "0$seconds" else "$seconds"
+                
                 Text(
-                    text = "%02d:%02d".format(minutes, seconds),
+                    text = "$minStr:$secStr",
                     style = MaterialTheme.typography.displayLarge.copy(fontWeight = FontWeight.Black),
                     color = MaterialTheme.colorScheme.onBackground
                 )
@@ -94,7 +91,7 @@ fun FocusScreen(onClose: () -> Unit) {
         Button(
             onClick = { isRunning = !isRunning },
             modifier = Modifier.fillMaxWidth().height(60.dp),
-            shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+            shape = RoundedCornerShape(20.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = if (isRunning) Color.Red.copy(alpha = 0.1f) else MaterialTheme.colorScheme.primary
             )

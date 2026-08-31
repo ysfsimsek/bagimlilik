@@ -1,11 +1,5 @@
-package com.opendrip.bagimlilik.ui.screens.home
+package com.ysfyazilim.bagimlilik.ui.screens.home
 
-import android.app.AppOpsManager
-import android.content.Context
-import android.content.Intent
-import android.os.Build
-import android.os.Process
-import android.provider.Settings
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -20,67 +14,30 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.opendrip.bagimlilik.data.repository.AuthRepository
-import com.opendrip.bagimlilik.data.repository.FirebaseManager
-import com.opendrip.bagimlilik.ui.components.ModernProgressBar
-import com.opendrip.bagimlilik.ui.screens.emergency.EmergencyScreen
-import com.opendrip.bagimlilik.ui.screens.focus.FocusScreen
-import com.opendrip.bagimlilik.utils.UsageStatsProvider
 import kotlinx.coroutines.delay
-import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun HomeScreen() {
-    val context = LocalContext.current
-    val authRepository = remember { AuthRepository(context) }
     val scrollState = rememberScrollState()
     
-    var showEmergency by remember { mutableStateOf(false) }
     var showMeditation by remember { mutableStateOf(false) }
-    var showFocus by remember { mutableStateOf(false) }
-    var hasUsagePermission by remember { mutableStateOf(checkUsageStatsPermission(context)) }
     var todayScreenTime by remember { mutableLongStateOf(0L) }
     
-    var userLevel by remember { mutableIntStateOf(authRepository.getLevel()) }
-    var userXP by remember { mutableIntStateOf(authRepository.getXP()) }
-    var targetTimeMillis by remember { mutableLongStateOf(authRepository.getTargetTime()) }
-    var isSportDone by remember { mutableStateOf(authRepository.isSportTaskDoneToday()) }
+    var userLevel by remember { mutableIntStateOf(1) }
+    var userXP by remember { mutableIntStateOf(20) }
+    var targetTimeMillis by remember { mutableLongStateOf(4 * 3600 * 1000L) }
+    var isSportDone by remember { mutableStateOf(false) }
 
-    val userName = authRepository.getUserName()
+    val userName = "Kullanıcı"
 
-    LaunchedEffect(Unit) {
-        while(true) {
-            hasUsagePermission = checkUsageStatsPermission(context)
-            if (hasUsagePermission) {
-                val time = UsageStatsProvider.getTodayTotalScreenTime(context)
-                todayScreenTime = time
-                
-                // Firebase Sync
-                val timeStr = UsageStatsProvider.formatMillisToText(time)
-                val topApps = UsageStatsProvider.getTopAppsUsage(context)
-                FirebaseManager.syncBaksiData(timeStr, userLevel, userXP, topApps)
-            }
-            targetTimeMillis = authRepository.getTargetTime()
-            userLevel = authRepository.getLevel()
-            userXP = authRepository.getXP()
-            delay(5.seconds)
-        }
-    }
-
-    if (showEmergency) {
-        EmergencyScreen(onClose = { showEmergency = false })
-    } else if (showMeditation) {
+    if (showMeditation) {
         MeditationScreen(onClose = { showMeditation = false })
-    } else if (showFocus) {
-        FocusScreen(onClose = { showFocus = false })
     } else {
         Column(
             modifier = Modifier
@@ -102,14 +59,6 @@ fun HomeScreen() {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            if (!hasUsagePermission) {
-                PermissionWarningCard {
-                    context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
@@ -121,17 +70,17 @@ fun HomeScreen() {
                     Spacer(modifier = Modifier.height(16.dp))
                     
                     val progress = (todayScreenTime.toFloat() / targetTimeMillis).coerceIn(0f, 1f)
-                    ModernProgressBar(
-                        progress = progress, 
-                        displayText = UsageStatsProvider.formatMillisToText(todayScreenTime)
+                    LinearProgressIndicator(
+                        progress = { progress },
+                        modifier = Modifier.fillMaxWidth().height(12.dp).clip(RoundedCornerShape(6.dp)),
+                        color = MaterialTheme.colorScheme.primary
                     )
                     
                     Spacer(modifier = Modifier.height(16.dp))
-                    val remainingTime = targetTimeMillis - todayScreenTime
                     Text(
-                        text = if (remainingTime > 0) "Hedefine ulaşmana ${UsageStatsProvider.formatMillisToText(remainingTime)} kaldı." else "Hedef süreni aştın!", 
+                        text = "Hedefine ulaşmana zaman var.", 
                         style = MaterialTheme.typography.bodyMedium, 
-                        color = if (remainingTime > 0) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f) else MaterialTheme.colorScheme.error
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
                 }
             }
@@ -144,10 +93,8 @@ fun HomeScreen() {
                 task = "$pushups Şınav ve $situps Mekik", 
                 isCompleted = isSportDone,
                 onComplete = {
-                    authRepository.completeSportTask()
                     isSportDone = true
-                    userXP = authRepository.getXP()
-                    userLevel = authRepository.getLevel()
+                    userXP += 10
                 }
             )
 
@@ -163,9 +110,7 @@ fun HomeScreen() {
             Spacer(modifier = Modifier.height(16.dp))
             
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                QuickActionButton(title = "Odaklan", icon = Icons.Default.Timer, color = MaterialTheme.colorScheme.primary, modifier = Modifier.weight(1f), onClick = { showFocus = true })
                 QuickActionButton(title = "Keşfet", icon = Icons.Default.AutoAwesome, color = MaterialTheme.colorScheme.secondary, modifier = Modifier.weight(1f), onClick = { showMeditation = true })
-                QuickActionButton(title = "Acil", icon = Icons.Default.NotificationsActive, color = Color(0xFFD00036), modifier = Modifier.weight(1f), onClick = { showEmergency = true })
             }
 
             Spacer(modifier = Modifier.height(100.dp))
@@ -289,26 +234,6 @@ fun MeditationScreen(onClose: () -> Unit) {
         
         Spacer(modifier = Modifier.height(100.dp))
         Button(onClick = onClose, shape = RoundedCornerShape(16.dp)) { Text("Farkındalığı Tamamla") }
-    }
-}
-
-private fun checkUsageStatsPermission(context: Context): Boolean {
-    val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
-    val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        appOps.unsafeCheckOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), context.packageName)
-    } else {
-        appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), context.packageName)
-    }
-    return mode == AppOpsManager.MODE_ALLOWED
-}
-
-@Composable
-fun PermissionWarningCard(onClick: () -> Unit) {
-    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text("Erişim İzni Eksik", style = MaterialTheme.typography.titleMedium)
-            Button(onClick = onClick, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)) { Text("İzin Ver") }
-        }
     }
 }
 
